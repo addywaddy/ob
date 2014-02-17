@@ -1,0 +1,73 @@
+<body>
+  <h1><%= @account.number %></h1>
+  <h2>Tagged Transactions<%= link_to 'Edit', account_tags_path(@account) %></h2>
+  <% @transactions.group_by{|transaction| transaction.date.strftime('%B-%Y') }.each do |month, monthly_transactions| %>
+<% outgoing = monthly_transactions.flatten.select{|tr| tr.amount < 0 }.map(&:amount).inject(0){|sum,amount| sum + amount }.abs %>
+<% income = monthly_transactions.flatten.select{|tr| tr.amount > 0 }.map(&:amount).inject(0){|sum,amount| sum + amount }.abs %>
+<% compulsory = monthly_transactions.flatten.select{|tr| Transaction.compulsory_kinds.include?(tr.kind) }.map(&:amount).inject(0){|sum,amount| sum + amount }.abs %>
+<% baseline = income > outgoing ? income : outgoing %>
+<% next unless outgoing.abs > 0 %>
+<div class='month'>
+  <h4><%= month %></h4>
+  <ul class='horiz-bar-chart'>
+    <li class='in'>
+      <span class='bar' style='width: <%= income/baseline * 100 %>%' title='Income'>
+        <span class='details'>
+          <%= sprintf('%.2f', income) %>
+        </span>
+      </span>
+    </li>
+    <li class='out'>
+      <span class='bar' style='width: <%= outgoing/baseline * 100 %>%' title='Outgoing'>
+        <span class='details'>
+          <%= sprintf('%.2f', outgoing) %>
+        </span>
+      </span>
+    </li>
+    <li class='out'>
+      <span class='bar' style='width: <%= compulsory/baseline * 100 %>%' title='Compulsory'>
+        <span class='details'>
+          <%= sprintf('%.2f', compulsory) %>
+        </span>
+      </span>
+    </li>
+    <li class='out'>
+      <span class='bar' style='width: <%= (outgoing - compulsory)/baseline * 100 %>%' title='Optional'>
+        <span class='details'>
+          <%= sprintf('%.2f', (outgoing - compulsory)) %>
+        </span>
+      </span>
+    </li>
+  </ul>
+</div>
+      <% end %>
+      <table class="table">
+        <thead>
+          <tr>
+            <th class='text-right'>Date</th>
+            <th class='text-right'>Type</th>
+            <th class='text-right'>Use</th>
+            <th class='text-right'>Partner</th>
+            <th class='text-right'>Infos</th>
+            <th class='text-right'>Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @transactions.each do |transaction| %>
+            <tr>
+              <td class='text-right'><%= transaction.date.strftime('%d.%m.%Y') %></td>
+              <td><%= transaction.kind %></td>
+              <td><%= transaction.use %></td>
+              <td><%= transaction.partner %></td>
+              <td><%= transaction.infos %></td>
+              <td class='text-right'><%= sprintf('%.2f', transaction.amount) %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+
+      <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+      <script src="//code.jquery.com/jquery.js"></script>
+      <!-- Include all compiled plugins (below), or include individual files as needed -->
+      <script src="/tb/js/bootstrap.min.js"></script>
+    </body>

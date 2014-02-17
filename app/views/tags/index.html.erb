@@ -1,0 +1,8 @@
+<h2>Tags</h2>
+<%= link_to 'Create new tag', new_account_tag_path(@account), class: 'btn btn-primary' %>
+<% @tags.each do |tag| %>
+  <dl>
+    <dt><%= tag.name %><%= link_to 'Edit', edit_account_tag_path(@account, tag) %></dt>
+    <dd><%= tag.pattern %></dd>
+  </dl>
+<% end %>
